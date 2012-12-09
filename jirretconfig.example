@@ -18,11 +18,6 @@ gerritcmd=ssh -p 29418 localhost gerrit
 # when it is merged 
 custom_field=
 
-# optional comma separated list of jira projects
-# if omitted, you must run "./hooks/jirret-process-hook update-projects" after setting up the above 
-# credentials to automatically fill in the projects list
-projects=
-
 # Set to 'true' if you'd like Jirret to search for Gerrit tracking IDs rather
 # than in the subject line for your issue IDs
 use_trackingid=false

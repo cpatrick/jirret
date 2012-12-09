@@ -12,47 +12,8 @@ import getopt
 import os.path
 
 
-
-# Config file path
-config_path = os.path.expanduser('~/.jirretconfig')
-
-config = ConfigParser.RawConfigParser()
-config.read(config_path)
-
-user = config.get('jira', 'user')
-password = config.get('jira', 'pass')
-url = config.get('jira', 'url')
-gerrit_cmd = config.get('jira', 'gerritcmd')
-custom_field = config.get('jira', 'custom_field')
-
-use_trackingid_option = ('jira', 'use_trackingid')
-use_trackingid = config.get(*use_trackingid_option).lower() == 'true' \
-    if config.has_option(*use_trackingid_option) else False
-
-enable_quotes_option = ('jira', 'enable_quotes')
-enable_quotes = config.get(*enable_quotes_option).lower() == 'true' \
-    if config.has_option(*enable_quotes_option) else True
-
-rpc = xmlrpclib.ServerProxy(url)
-auth = rpc.jira1.login(user, password)
-
 def showUsage():
     print '\nNormal hook usage: ' + sys.argv[0] + ' --action [new|merged|abandoned] --change <change id> --commit <git hash> --change-url <url to change>'
-    print '\nTo automatically update projects list in config: ' + sys.argv[0] + ' update-projects'
-
-def updateProjects():
-    projects = rpc.jira1.getProjectsNoSchemes(auth)
-    s = ''
-    for p in projects:
-        s += p['key'] + ','
-
-    s = s.rstrip(',')
-    config.set('jira', 'projects', s)
-
-    with open(config_path, 'wb') as configfile:
-        config.write(configfile)
-        
-    print '\nAdded "' + s + '" to ' + config_path + '\n'
 
 def updateTicket(what, id, hash, url, who, branch):
     status, out = commands.getstatusoutput(gerrit_cmd + ' query --format TEXT change:' + id + ' limit:1')
@@ -61,7 +22,7 @@ def updateTicket(what, id, hash, url, who, branch):
         exit()
     subject = re.search('subject: (.*)\n', out).group(1);
     gerrit_prj = re.search('project: (.*)\n', out).group(1);
-    projects = config.get('jira', 'projects').split(',')
+    projects = gproject
 
     issues = []
     print projects
@@ -136,7 +97,33 @@ def main():
         elif o == '--submitter': who = a
         elif o == '--abandoner': who = a
         elif o == '--branch': branch = a
+        elif o == '--project': gproject = a
+        
+    # Config file path
+    path = '~/.jirretconfig_' + gproject
+    print(path)
+    config_path = os.path.expanduser(path)
+    print(config_path)
 
+    config = ConfigParser.RawConfigParser()
+    config.read(config_path)
+
+    user = config.get('jira', 'user')
+    password = config.get('jira', 'pass')
+    url = config.get('jira', 'url')
+    gerrit_cmd = config.get('jira', 'gerritcmd')
+    custom_field = config.get('jira', 'custom_field')
+
+    use_trackingid_option = ('jira', 'use_trackingid')
+    use_trackingid = config.get(*use_trackingid_option).lower() == 'true' \
+        if config.has_option(*use_trackingid_option) else False
+
+    enable_quotes_option = ('jira', 'enable_quotes')
+    enable_quotes = config.get(*enable_quotes_option).lower() == 'true' \
+        if config.has_option(*enable_quotes_option) else True
+
+    rpc = xmlrpclib.ServerProxy(url)
+    auth = rpc.jira1.login(user, password)
     if (len(what) > 0 and len(id) > 0):
         updateTicket(what, id, hash, url, who, branch)
     else:
