@@ -3,7 +3,7 @@
 #username for jira user
 user=user
 
-#passowrd for jira user
+#password for jira user
 pass=pass
 
 #URL to jira instance rpc calls (http://<domain>/rpc/xmlrpc)
@@ -19,7 +19,7 @@ gerritcmd=ssh -p 29418 localhost gerrit
 custom_field=
 
 # optional comma separated list of jira projects
-# if ommited, you must run "./hooks/jirret-process-hook update-projects" after setting up the above 
+# if omitted, you must run "./hooks/jirret-process-hook update-projects" after setting up the above 
 # credentials to automatically fill in the projects list
 projects=
 
