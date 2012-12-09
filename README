@@ -1,15 +1,23 @@
 Overview
 --------
-Set of gerrit hooks that will update JIRA issues referenced in the subject of any changes.  Currently has hooks for change-abandoned, change-merged, patchset-created.
+Set of gerrit hooks that will update JIRA issues referenced in the subject of any changes.  Currently has hooks for change-abandoned,
+change-merged, patchset-created.
+
+This set of code is based off of the original jerrit code released by hobbs, see https://github.com/hobbs/jirret
+
+The primary difference between this version and upstream is that this version aims to support several different jira instances
+simultanioulsy from a single gerrit install by having a seperate configuration file per project.
+
+Please note these scripts are still work in progress and have yet to be tested.
 
 More info on hooks at:
-http://gerrit.googlecode.com/svn/documentation/2.1.6/config-hooks.html
+http://gerrit-documentation.googlecode.com/svn/Documentation/2.5/config-hooks.html
 
 Requirements
 ------------
  - The user that runs the gerrit process must be able to ssh into the gerrit sshd to run "gerrit query" commands.  
  - JIRA must have xmlrpc enabled ( http://confluence.atlassian.com/display/JIRADEV/JIRA+XML-RPC+Overview )
- - Gerrit must have the canonicalWebUrl setup in order to add links to the change ( http://gerrit.googlecode.com/svn/documentation/2.1.6/config-gerrit.html#gerrit.canonicalWebUrl )
+ - Gerrit must have the canonicalWebUrl setup in order to add links to the change - see http://gerrit-documentation.googlecode.com/svn/Documentation/2.5/config-gerrit.html#_a_id_gerrit_a_section_gerrit
 
 Installation Steps
 -------------------
@@ -19,9 +27,12 @@ Installation Steps
 
 Config file
 ------------
-jirret looks for a config file at ~/.jirretconfig
+jirret looks for a config file at ~/.jirretconfig_<GERRIT_PROJECT_NAME>
+
+Where <GERRIT_PROJECT_NAME> is the name that gerrit uses to identify a given project.
+
 See jirretconfig.example for an example.
 
 Known issues/limitations
 -------------------------
- - Projects do not auto update when added to JIRA
+ - Still untested :-)
