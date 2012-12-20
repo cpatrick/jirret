@@ -1,14 +1,12 @@
 Overview
 --------
-Set of gerrit hooks that will update JIRA issues referenced in the subject of any changes.  Currently has hooks for change-abandoned,
-change-merged, patchset-created.
+Set of gerrit hooks that will update JIRA issues referenced in the subject of any changes.  Currently has hooks for change-abandoned, change-merged, patchset-created & comment-added.
 
 This set of code is based off of the original jerrit code released by hobbs, see https://github.com/hobbs/jirret
 
-The primary difference between this version and upstream is that this version aims to support several different jira instances
-simultanioulsy from a single gerrit install by having a seperate configuration file per project.
+The primary difference between this version and upstream is that this version aims to support several different jira instances simultanioulsy from a single gerrit install by having seperate configuration sections in the config file named based on the gerrit project.
 
-Please note these scripts are still work in progress and have yet to be tested.
+Please note these scripts are still work in progress and have yet to be tested fully, initial testing on a 2.5 install of gerrit seems functional.
 
 More info on hooks at:
 http://gerrit-documentation.googlecode.com/svn/Documentation/2.5/config-hooks.html
@@ -27,12 +25,12 @@ Installation Steps
 
 Config file
 ------------
-jirret looks for a config file at ~/.jirretconfig_<GERRIT_PROJECT_NAME>
+jirret looks for a config file at ~/.jirretconfig
 
-Where <GERRIT_PROJECT_NAME> is the name that gerrit uses to identify a given project.
+In the configuration files you need a section per project, this section needs to be called the same as the Gerrit project
 
 See jirretconfig.example for an example.
 
 Known issues/limitations
 -------------------------
- - Still untested :-)
+ - Still limited testing

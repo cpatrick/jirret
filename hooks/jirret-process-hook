@@ -12,29 +12,36 @@ import getopt
 import os.path
 
 
+
+# Config file path
+config_path = os.path.expanduser('~/.jirretconfig')
+
+config = ConfigParser.RawConfigParser()
+config.read(config_path)
+
+
 def showUsage():
     print '\nNormal hook usage: ' + sys.argv[0] + ' --action [new|merged|abandoned] --change <change id> --commit <git hash> --change-url <url to change>'
+    print '\nTo automatically update projects list in config: ' + sys.argv[0] + ' update-projects'
 
-def updateTicket(what, id, hash, url, who, branch):
+def updateTicket(comment, author, auth, rpc, enable_quotes, use_trackingid, gerrit_cmd, what, id, hash, curl, who, branch):
     status, out = commands.getstatusoutput(gerrit_cmd + ' query --format TEXT change:' + id + ' limit:1')
     if (status != 0):
         print 'Could not run gerrit query command.\n' + out
         exit()
+
     subject = re.search('subject: (.*)\n', out).group(1);
     gerrit_prj = re.search('project: (.*)\n', out).group(1);
-    projects = gproject
+    projects = config.get('jira', 'projects').split(',')
 
     issues = []
-    print projects
     issue_needle = '(%s-[0-9]+)'
     issue_haystack = subject
     if use_trackingid:
         issue_needle = ' +id: +' + issue_needle
         issue_haystack = out
     for p in projects:
-        print issues
         matches = re.findall(issue_needle % p, issue_haystack)
-        print matches
         for m in matches:
             issues.append(m)
 
@@ -48,20 +55,26 @@ def updateTicket(what, id, hash, url, who, branch):
             status = 'merged'
         elif what == 'abandoned':
             message += ' abandonded: '
+        elif what == 'comment':
+            message += '\n Comment Added by ' + author + ' on '
         else:
             print 'Illegal argument, stopping: ' + what
             exit()
-
-        if (len(url) > 0):
-            message += url
+        if (len(curl) > 0):
+            message += curl
         if (enable_quotes):
             message += '{quote}'
         message += '\nSubject: ' + subject + '\n'
         message += 'Project: ' + gerrit_prj + '\n'
         message += 'Branch: ' + branch + '\n'
         message += 'ChangeId: ' + id + '\n'
+        message += 'Gerrit URI: ' + curl + '\n'
         if (len(hash) > 0):
             message += 'Commit: ' + hash+ '\n'
+
+        if what == 'comment':
+	    message += '\n\nComment by ' + author + ' Reads:\n' + comment + '\n\n'
+ 
         if (enable_quotes):
             message += '{quote}'
 
@@ -69,12 +82,9 @@ def updateTicket(what, id, hash, url, who, branch):
         for i in issues:
             print 'Updating issue: ' + i
             rpc.jira1.addComment(auth, i, message)
-            if len(status) > 0 and len(custom_field) > 0:
-                rpc.jira1.updateIssue(auth, i, {'customfield_' + custom_field: [status]})
 
 
 def main():
-
     if (len(sys.argv) < 2):
         showUsage()
         exit()
@@ -82,52 +92,54 @@ def main():
     if (sys.argv[1] == 'update-projects'):
         updateProjects()
         exit()
-
     need = ['action=', 'change=', 'change-url=', 'commit=', 'project=', 'branch=', 'uploader=',
-            'patchset=', 'abandoner=', 'reason=', 'submitter=']
+            'patchset=', 'abandoner=', 'reason=', 'submitter=', 'is-draft=', 'author=', 'comment=','CRVW=', 'VRIF=']
     optlist, args = getopt.getopt(sys.argv[1:], '', need)
-    id = url = hash = who = ''
-
+    id = curl = hash = who = project = author = comment = changeuri = ''
+    
     for o, a in optlist:
         if o == '--change': id = a
-        elif o == '--change-url': url = a
+        elif o == '--change-url': curl = a
         elif o == '--commit': hash = a
         elif o == '--action': what = a
         elif o == '--uploader': who = a
         elif o == '--submitter': who = a
         elif o == '--abandoner': who = a
         elif o == '--branch': branch = a
-        elif o == '--project': gproject = a
-        
-    # Config file path
-    path = '~/.jirretconfig_' + gproject
-    print(path)
-    config_path = os.path.expanduser(path)
-    print(config_path)
+        elif o == '--project': project = a
+        elif o == '--author': author = a
+        elif o == '--comment': comment = a
 
-    config = ConfigParser.RawConfigParser()
-    config.read(config_path)
+    user = config.get(project, 'user')
+    password = config.get(project, 'pass')
+    url = config.get(project, 'url')
+    gerrit_cmd = config.get(project, 'gerritcmd')
 
-    user = config.get('jira', 'user')
-    password = config.get('jira', 'pass')
-    url = config.get('jira', 'url')
-    gerrit_cmd = config.get('jira', 'gerritcmd')
-    custom_field = config.get('jira', 'custom_field')
-
-    use_trackingid_option = ('jira', 'use_trackingid')
+    use_trackingid_option = (project, 'use_trackingid')
     use_trackingid = config.get(*use_trackingid_option).lower() == 'true' \
-        if config.has_option(*use_trackingid_option) else False
+    if config.has_option(*use_trackingid_option) else False
 
-    enable_quotes_option = ('jira', 'enable_quotes')
+    enable_quotes_option = (project, 'enable_quotes')
     enable_quotes = config.get(*enable_quotes_option).lower() == 'true' \
-        if config.has_option(*enable_quotes_option) else True
+    if config.has_option(*enable_quotes_option) else True
 
     rpc = xmlrpclib.ServerProxy(url)
     auth = rpc.jira1.login(user, password)
+
     if (len(what) > 0 and len(id) > 0):
-        updateTicket(what, id, hash, url, who, branch)
+        print "what=" + what
+	print "id=" + id
+	print "hash=" + hash
+	print "who=" + who
+	print "brnach=" + branch
+        print "changeuri=" + curl
+        print "comment=" + comment
+        updateTicket(comment, author, auth, rpc, enable_quotes, use_trackingid, gerrit_cmd, what, id, hash, curl, who, branch)
+        
     else:
         showUsage()
         
 if __name__ == '__main__':
     main()
+
+

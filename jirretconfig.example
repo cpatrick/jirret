@@ -1,26 +1,34 @@
-[jira]
+#The configuration File supports multiple projects
+#in order to do this for each project you need to have
+#a section in the config file.
+
+#The section needs to be names the same as the project in gerrit
+
+[Project1] # gerrit's project name
 
 #username for jira user
-user=user
+user=gerrit
 
-#password for jira user
-pass=pass
+##password for jira user
+pass=password
 
-#URL to jira instance rpc calls (http://<domain>/rpc/xmlrpc)
-url=http://jira.atlassian.com/rpc/xmlrpc
-
-# the command that is used to ssh into the gerrit sshd
+##URL to jira instance rpc calls (http://<domain>/rpc/xmlrpc)
+url=http://myjira.com:8080/rpc/xmlrpc
+#
+## the command that is used to ssh into the gerrit sshd
 gerritcmd=ssh -p 29418 localhost gerrit
+#
 
-# If you create a custom field for "Gerrit status", put the numeric ID
-# here.  The ID is found from the URL when editing that custom field.
-# if set, it will set it to "pending" when a patch is uploaded, and "merged"
-# when it is merged 
-custom_field=
+# projects should be set to the name of the JIRA Project that
+#you with feedback to be sent to
+projects=DEMOP
 
-# Set to 'true' if you'd like Jirret to search for Gerrit tracking IDs rather
-# than in the subject line for your issue IDs
+## Set to 'true' if you'd like Jirret to search for Gerrit tracking IDs rather
+## than in the subject line for your issue IDs
 use_trackingid=false
 
-# Set to false to disable {quote} markers surrounding comments
-enable_quotes=true
+## Set to false to disable {quote} markers surrounding comments
+enable_quotes=false
+
+
+
