@@ -93,7 +93,7 @@ def main():
         updateProjects()
         exit()
     need = ['action=', 'change=', 'change-url=', 'commit=', 'project=', 'branch=', 'uploader=',
-            'patchset=', 'abandoner=', 'reason=', 'submitter=', 'is-draft=', 'author=', 'comment=','CRVW=', 'VRIF=']
+            'patchset=', 'abandoner=', 'reason=', 'submitter=', 'is-draft=', 'author=', 'comment=','CRVW=', 'VRIF=', 'topic']
     optlist, args = getopt.getopt(sys.argv[1:], '', need)
     id = curl = hash = who = project = author = comment = changeuri = ''
     
